@@ -1,9 +1,9 @@
-# terragrunt-live-template
+# terragrunt-baseline
 
 Multi-environment Terragrunt baseline for AWS and Azure: remote state, GitHub OIDC federation without stored secrets, network and budget modules, and plan, apply and drift-detection pipelines.
 
-[![CI Baseline](https://github.com/thesanketkale/terragrunt-live-template/actions/workflows/ci.yml/badge.svg)](https://github.com/thesanketkale/terragrunt-live-template/actions/workflows/ci.yml)
-[![Latest Release](https://img.shields.io/github/v/release/thesanketkale/terragrunt-live-template?color=blue)](https://github.com/thesanketkale/terragrunt-live-template/releases)
+[![CI Baseline](https://github.com/thesanketkale/terragrunt-baseline/actions/workflows/ci.yml/badge.svg)](https://github.com/thesanketkale/terragrunt-baseline/actions/workflows/ci.yml)
+[![Latest Release](https://img.shields.io/github/v/release/thesanketkale/terragrunt-baseline?color=blue)](https://github.com/thesanketkale/terragrunt-baseline/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -12,14 +12,14 @@ Multi-environment Terragrunt baseline for AWS and Azure: remote state, GitHub OI
 
 Managing multi-tier infrastructure across multiple public clouds frequently leads teams into one of two traps: either sprawling, copy-pasted Terraform configurations where remote backend definitions and provider blocks are duplicated across dozens of folders, or opaque, monolithic landing-zone frameworks that are too rigid for modern agile workloads.
 
-`terragrunt-live-template` solves this by providing a clean, modular foundation:
+`terragrunt-baseline` solves this by providing a clean, modular foundation:
 - **Zero Stored Credentials:** All CI/CD workflows authenticate exclusively through short-lived GitHub Actions OpenID Connect (OIDC) tokens—no static access keys or client secrets stored in GitHub secrets.
 - **DRY Multi-Cloud Architecture:** Terragrunt dynamically generates remote backend and provider configurations for both AWS and Azure using a single `root.hcl` root file.
 - **Fail-Fast Offline Testability:** Every module ships with native `terraform test` (`*.tftest.hcl`) utilizing `mock_provider` for complete offline test execution without requiring cloud credentials.
 
 ### Honest Comparison with Existing Alternatives
 
-| Feature / Aspect | `terragrunt-live-template` | Vanilla Terraform Workspaces | Gruntwork Reference Architecture | Cloud Posse Components |
+| Feature / Aspect | `terragrunt-baseline` | Vanilla Terraform Workspaces | Gruntwork Reference Architecture | Cloud Posse Components |
 | :--- | :--- | :--- | :--- | :--- |
 | **Multi-Cloud Support** | AWS and Azure unified in one DRY hierarchy | Manual provider blocks per cloud | AWS-first (Azure separate / paid) | AWS-centric |
 | **Credential Management** | 100% OIDC federated (no stored keys) | Often relies on stored static keys | OIDC supported via boilerplate | OIDC via Atmos/Spacelift |
@@ -51,7 +51,7 @@ Run these five commands from a clean machine with Terraform and Terragrunt insta
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/thesanketkale/terragrunt-live-template.git && cd terragrunt-live-template
+git clone https://github.com/thesanketkale/terragrunt-baseline.git && cd terragrunt-baseline
 
 # 2. Run clean-room and secret scanner
 ./tools/guard.sh # Or in PowerShell: .\tools\guard.ps1
@@ -73,7 +73,7 @@ cd live/aws/111111111111/us-east-1/dev/network && terragrunt plan
 ```mermaid
 graph TD
     subgraph GitHub["GitHub Ecosystem"]
-        Repo["thesanketkale/terragrunt-live-template"]
+        Repo["thesanketkale/terragrunt-baseline"]
         OIDC_Provider["GitHub Actions OIDC Provider<br/>(token.actions.githubusercontent.com)"]
         WF_CI["ci.yml (Format, Validate, Test)"]
         WF_Plan["plan.yml (PR Speculative Plan)"]

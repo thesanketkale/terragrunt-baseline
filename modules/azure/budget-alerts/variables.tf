@@ -3,12 +3,6 @@ variable "resource_group_name" {
   description = "Name of the resource group where the action group and budget are managed."
 }
 
-variable "subscription_id" {
-  type        = string
-  description = "Target Azure subscription ID for consumption budget tracking."
-  default     = "00000000-0000-0000-0000-000000000000"
-}
-
 variable "budget_name" {
   type        = string
   description = "Name of the Azure Consumption Budget."

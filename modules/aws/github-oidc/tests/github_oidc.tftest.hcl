@@ -1,7 +1,13 @@
 # Native Terraform Test for AWS GitHub OIDC Module
 # Uses mock_provider for offline validation of IAM roles and trust policies.
 
-mock_provider "aws" {}
+mock_provider "aws" {
+  mock_data "aws_iam_policy_document" {
+    defaults = {
+      json = "{\"Version\":\"2012-10-17\",\"Statement\":[]}"
+    }
+  }
+}
 
 run "verify_plan_and_apply_roles" {
   command = plan

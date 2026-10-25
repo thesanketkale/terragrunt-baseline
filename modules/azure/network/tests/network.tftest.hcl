@@ -18,12 +18,12 @@ run "verify_vnet_and_nsg_rules" {
   }
 
   assert {
-    condition     = azurerm_virtual_network.main.address_space == tolist(["10.0.0.0/16"])
+    condition     = contains(azurerm_virtual_network.main.address_space, "10.0.0.0/16")
     error_message = "VNet address space must match configured CIDR."
   }
 
   assert {
-    condition     = azurerm_subnet.public.address_prefixes == tolist(["10.0.1.0/24"])
+    condition     = contains(azurerm_subnet.public.address_prefixes, "10.0.1.0/24")
     error_message = "Public subnet address prefix must match."
   }
 

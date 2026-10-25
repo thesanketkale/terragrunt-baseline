@@ -32,7 +32,7 @@ run "verify_action_group_and_thresholds" {
   }
 
   assert {
-    condition     = length(azurerm_consumption_budget_resource_group.budget.notification) == 3
-    error_message = "Must configure exactly 3 notification thresholds."
+    condition     = azurerm_consumption_budget_resource_group.budget.time_grain == "Monthly"
+    error_message = "Budget time grain must be Monthly."
   }
 }

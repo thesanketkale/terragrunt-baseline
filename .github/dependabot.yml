@@ -6,6 +6,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "ci(deps)"
+    open-pull-requests-limit: 3
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: "terraform"
     directory: "/modules/aws/state-backend"
@@ -13,6 +18,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
+    open-pull-requests-limit: 2
+    groups:
+      terraform:
+        patterns:
+          - "*"
 
   - package-ecosystem: "terraform"
     directory: "/modules/aws/github-oidc"
@@ -20,6 +30,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
+    open-pull-requests-limit: 2
+    groups:
+      terraform:
+        patterns:
+          - "*"
 
   - package-ecosystem: "terraform"
     directory: "/modules/aws/network"
@@ -27,6 +42,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
+    open-pull-requests-limit: 2
+    groups:
+      terraform:
+        patterns:
+          - "*"
 
   - package-ecosystem: "terraform"
     directory: "/modules/aws/budget-alerts"
@@ -34,6 +54,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
+    open-pull-requests-limit: 2
+    groups:
+      terraform:
+        patterns:
+          - "*"
 
   - package-ecosystem: "terraform"
     directory: "/modules/azure/state-backend"
@@ -41,6 +66,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
+    open-pull-requests-limit: 2
+    groups:
+      terraform:
+        patterns:
+          - "*"
 
   - package-ecosystem: "terraform"
     directory: "/modules/azure/github-oidc"
@@ -48,6 +78,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
+    open-pull-requests-limit: 2
+    groups:
+      terraform:
+        patterns:
+          - "*"
 
   - package-ecosystem: "terraform"
     directory: "/modules/azure/network"
@@ -55,6 +90,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
+    open-pull-requests-limit: 2
+    groups:
+      terraform:
+        patterns:
+          - "*"
 
   - package-ecosystem: "terraform"
     directory: "/modules/azure/budget-alerts"
@@ -62,3 +102,8 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
+    open-pull-requests-limit: 2
+    groups:
+      terraform:
+        patterns:
+          - "*"

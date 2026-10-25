@@ -1,0 +1,134 @@
+name: CI Baseline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions: {}
+
+jobs:
+  guard:
+    name: Clean-Room & Security Guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Run Repository Guard
+        run: |
+          chmod +x tools/guard.sh
+          ./tools/guard.sh
+
+  lint:
+    name: Format & TFLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.10.5
+          terraform_wrapper: false
+
+      - name: Setup Terragrunt
+        run: |
+          TG_VERSION="v0.63.6"
+          curl -sL "https://github.com/gruntwork-io/terragrunt/releases/download/${TG_VERSION}/terragrunt_linux_amd64" -o /usr/local/bin/terragrunt
+          chmod +x /usr/local/bin/terragrunt
+          terragrunt --version
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@90f302c255ef959cbfb4bd10581afecdb7ece3e6 # v4.1.1
+        with:
+          tflint_version: v0.55.0
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terragrunt Format Check
+        run: terragrunt hcl fmt --check 2>/dev/null || terragrunt hclfmt --terragrunt-check
+
+      - name: Run TFLint
+        run: |
+          tflint --init || true
+          tflint --recursive
+
+  validate:
+    name: Validate Modules
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.10.5
+          terraform_wrapper: false
+
+      - name: Validate All Modules & Stacks
+        run: |
+          find modules bootstrap -name "main.tf" -exec dirname {} \; | sort -u | while read -r dir; do
+            echo "Validating $dir..."
+            (cd "$dir" && terraform init -backend=false -input=false >/dev/null && terraform validate -no-color)
+          done
+
+  test:
+    name: Native Terraform Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.10.5
+          terraform_wrapper: false
+
+      - name: Run Native Module Tests (mock_provider)
+        run: |
+          find modules -name "tests" -type d | while read -r testdir; do
+            moddir="$(dirname "$testdir")"
+            echo "Testing module $moddir..."
+            (cd "$moddir" && terraform init -backend=false -input=false >/dev/null && terraform test -no-color)
+          done
+
+  gitleaks:
+    name: Secret Scanner (Gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

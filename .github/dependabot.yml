@@ -1,0 +1,64 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci(deps)"
+
+  - package-ecosystem: "terraform"
+    directory: "/modules/aws/state-backend"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: "terraform"
+    directory: "/modules/aws/github-oidc"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: "terraform"
+    directory: "/modules/aws/network"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: "terraform"
+    directory: "/modules/aws/budget-alerts"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: "terraform"
+    directory: "/modules/azure/state-backend"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: "terraform"
+    directory: "/modules/azure/github-oidc"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: "terraform"
+    directory: "/modules/azure/network"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: "terraform"
+    directory: "/modules/azure/budget-alerts"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"

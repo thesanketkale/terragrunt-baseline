@@ -1,0 +1,49 @@
+name: Bug Report
+description: Create a report to help us reproduce and fix an issue.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue in `terragrunt-live-template`.
+  - type: input
+    id: version
+    attributes:
+      label: Tooling Versions
+      description: What versions of Terraform, OpenTofu, and Terragrunt are you using?
+      placeholder: "e.g., Terraform 1.10.5, Terragrunt 0.63.6"
+    validations:
+      required: true
+  - type: dropdown
+    id: cloud
+    attributes:
+      label: Cloud Provider
+      options:
+        - AWS
+        - Azure
+        - Both
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Exact commands executed from repo root.
+      placeholder: |
+        1. cd live/aws/111111111111/us-east-1/dev/network
+        2. terragrunt plan
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Terminal Output / Error Logs
+      description: Redact any private identifiers or credentials before posting.
+      render: shell

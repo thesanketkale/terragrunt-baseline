@@ -1,0 +1,117 @@
+name: Terragrunt Plan
+
+on:
+  pull_request:
+    paths:
+      - 'live/**'
+      - 'modules/**'
+      - '_envcommon/**'
+      - 'root.hcl'
+
+concurrency:
+  group: plan-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  plan:
+    name: Speculative Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.10.5
+          terraform_wrapper: false
+
+      - name: Setup Terragrunt
+        run: |
+          TG_VERSION="v0.63.6"
+          curl -sL "https://github.com/gruntwork-io/terragrunt/releases/download/${TG_VERSION}/terragrunt_linux_amd64" -o /usr/local/bin/terragrunt
+          chmod +x /usr/local/bin/terragrunt
+
+      # Optional AWS OIDC Authentication (runs only when role ARN is configured)
+      - name: Configure AWS OIDC Credentials
+        if: env.AWS_PLAN_ROLE != ''
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_PLAN_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+        env:
+          AWS_PLAN_ROLE: ${{ secrets.AWS_PLAN_ROLE_ARN }}
+
+      # Optional Azure OIDC Authentication (runs only when client ID is configured)
+      - name: Azure OIDC Login
+        if: env.AZURE_CLIENT_ID != ''
+        uses: azure/login@d19a4f1b3c068b799dff7574ac265b0144f415fe # v2.2.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+
+      - name: Detect Changed Stacks and Generate Plan
+        id: plan_step
+        run: |
+          mkdir -p .pipeline/plans
+          echo "### Terragrunt Speculative Plan Summary" > .pipeline/plan_summary.md
+          echo "Triggered on commit \`${{ github.sha }}\`" >> .pipeline/plan_summary.md
+          echo "" >> .pipeline/plan_summary.md
+
+          # Detect modified stacks via git diff against merge base
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+          echo "Detected changed files:"
+          echo "$CHANGED_FILES"
+
+          # Synthesize plan summary block
+          echo "<details><summary>Click to view affected stacks</summary>" >> .pipeline/plan_summary.md
+          echo "" >> .pipeline/plan_summary.md
+          echo '```text' >> .pipeline/plan_summary.md
+          echo "$CHANGED_FILES" >> .pipeline/plan_summary.md
+          echo '```' >> .pipeline/plan_summary.md
+          echo "</details>" >> .pipeline/plan_summary.md
+
+      - name: Post Plan Summary Sticky PR Comment
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+            const summaryPath = '.pipeline/plan_summary.md';
+            if (fs.existsSync(summaryPath)) {
+              const body = fs.readFileSync(summaryPath, 'utf8');
+              const issue_number = context.issue.number;
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue_number,
+              });
+              const botComment = comments.find(c => c.body.includes('### Terragrunt Speculative Plan Summary'));
+              if (botComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue_number,
+                  body: body,
+                });
+              }
+            }

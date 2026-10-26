@@ -67,9 +67,11 @@ jobs:
         id: plan_step
         run: |
           mkdir -p .pipeline/plans
-          echo "### Terragrunt Speculative Plan Summary" > .pipeline/plan_summary.md
-          echo "Triggered on commit \`${{ github.sha }}\`" >> .pipeline/plan_summary.md
-          echo "" >> .pipeline/plan_summary.md
+          {
+            echo "### Terragrunt Speculative Plan Summary"
+            echo "Triggered on commit \`${{ github.sha }}\`"
+            echo ""
+          } > .pipeline/plan_summary.md
 
           # Detect modified stacks via git diff against merge base
           CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
@@ -77,12 +79,14 @@ jobs:
           echo "$CHANGED_FILES"
 
           # Synthesize plan summary block
-          echo "<details><summary>Click to view affected stacks</summary>" >> .pipeline/plan_summary.md
-          echo "" >> .pipeline/plan_summary.md
-          echo '```text' >> .pipeline/plan_summary.md
-          echo "$CHANGED_FILES" >> .pipeline/plan_summary.md
-          echo '```' >> .pipeline/plan_summary.md
-          echo "</details>" >> .pipeline/plan_summary.md
+          {
+            echo "<details><summary>Click to view affected stacks</summary>"
+            echo ""
+            echo '```text'
+            echo "$CHANGED_FILES"
+            echo '```'
+            echo "</details>"
+          } >> .pipeline/plan_summary.md
 
       - name: Post Plan Summary Sticky PR Comment
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
